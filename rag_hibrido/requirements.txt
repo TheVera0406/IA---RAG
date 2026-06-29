@@ -1,0 +1,21 @@
+# Lectura y procesamiento de datos
+pandas
+pypdf
+
+# División del texto en fragmentos
+langchain-text-splitters
+
+# Embeddings locales
+sentence-transformers
+
+# Base de datos vectorial
+chromadb
+
+# Conexión con modelos de OpenAI
+langchain-openai
+
+# Lectura segura de variables desde .env
+python-dotenv
+
+# Barras de progreso para procesos largos
+tqdm
