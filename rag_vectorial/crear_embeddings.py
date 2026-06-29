@@ -20,15 +20,15 @@ from pathlib import Path
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+# Importamos la configuración centralizada
+from config import SALIDAS_DIR, MODELO_EMBEDDINGS
 
-# BLOQUE 1: CONFIGURACIÓN
 
-BASE_DIR = Path(__file__).resolve().parent
-SALIDAS_DIR = BASE_DIR / "salidas"
+# BLOQUE 1: CONFIGURACIÓN DE RUTAS
+
 ARCHIVO_CHUNKS = SALIDAS_DIR / "chunks.jsonl"
 ARCHIVO_EMBEDDINGS = SALIDAS_DIR / "embeddings.npy"
 ARCHIVO_INFO = SALIDAS_DIR / "info_embeddings.json"
-MODELO_EMBEDDINGS = "intfloat/multilingual-e5-base"
 BATCH_SIZE = 32
 
 
@@ -68,7 +68,10 @@ def crear_embeddings(chunks: list[dict]) -> np.ndarray:
     print(f"Cargando modelo: {MODELO_EMBEDDINGS}")
 
     modelo = SentenceTransformer(MODELO_EMBEDDINGS)
-    textos = [chunk["texto"] for chunk in chunks]
+    
+    # CORRECCIÓN CRÍTICA: Agregamos el prefijo 'passage: ' 
+    # requerido por el modelo E5 para los documentos indexados.
+    textos = [f"passage: {chunk['texto']}" for chunk in chunks]
 
     return modelo.encode(
         textos,

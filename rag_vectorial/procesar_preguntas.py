@@ -1,4 +1,3 @@
-
 """
 ETAPA E - PROCESAMIENTO AUTOMÁTICO DE PREGUNTAS.CSV
 
@@ -98,7 +97,8 @@ def guardar_respuesta(id_pregunta: str, respuesta: str, contexto: str) -> None:
         "contexto utilizado": contexto,
     }
 
-    with ARCHIVO_RESPUESTAS.open("a", encoding="utf-8", newline="") as archivo:
+    # CORRECCIÓN: utf-8-sig para compatibilidad con Excel
+    with ARCHIVO_RESPUESTAS.open("a", encoding="utf-8-sig", newline="") as archivo:
         escritor = csv.DictWriter(
             archivo,
             fieldnames=["ID", "respuesta", "contexto utilizado"],
@@ -114,7 +114,8 @@ def guardar_error(id_pregunta: str, pregunta: str, error: Exception) -> None:
         "error": f"{type(error).__name__}: {error}",
     }
 
-    with ARCHIVO_ERRORES.open("a", encoding="utf-8", newline="") as archivo:
+    # CORRECCIÓN: utf-8-sig para compatibilidad con Excel
+    with ARCHIVO_ERRORES.open("a", encoding="utf-8-sig", newline="") as archivo:
         escritor = csv.DictWriter(
             archivo,
             fieldnames=["ID", "pregunta", "error"],
@@ -128,12 +129,14 @@ def guardar_error(id_pregunta: str, pregunta: str, error: Exception) -> None:
 
 def generar_con_reintentos(pregunta: str, resultados: list[dict], cliente):
     """Reintenta la llamada cuando ocurre un error temporal."""
+    
+    # CORRECCIÓN: Se eliminó ValueError para no crear bucles infinitos
+    # ante errores de contexto vacío o parámetros inválidos.
     errores_temporales = (
         openai.RateLimitError,
         openai.APIConnectionError,
         openai.APITimeoutError,
         openai.InternalServerError,
-        ValueError,
     )
 
     for intento in range(1, MAX_INTENTOS + 1):
@@ -263,4 +266,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

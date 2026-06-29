@@ -1,0 +1,15 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Archivos de entorno y secretos
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Carpetas generadas dinámicamente
+/base_vectorial/
+/salidas/

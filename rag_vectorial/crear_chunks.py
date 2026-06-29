@@ -1,4 +1,3 @@
-
 """
 ETAPA B.2 - CREACIÓN DE CHUNKS
 
@@ -26,16 +25,15 @@ from pathlib import Path
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+# Importamos la configuración centralizada
+from config import BASE_DIR, SALIDAS_DIR, CHUNK_SIZE, CHUNK_OVERLAP
 
-# BLOQUE 1: CONFIGURACIÓN
 
-BASE_DIR = Path(__file__).resolve().parent
-SALIDAS_DIR = BASE_DIR / "salidas"
+# BLOQUE 1: CONFIGURACIÓN DE RUTAS
+
 ARCHIVO_PAGINAS = SALIDAS_DIR / "paginas_extraidas.jsonl"
 ARCHIVO_CHUNKS = SALIDAS_DIR / "chunks.jsonl"
 ARCHIVO_RESUMEN = SALIDAS_DIR / "resumen_chunks.csv"
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 200
 
 
 # BLOQUE 2: CARGAR LAS PÁGINAS
@@ -61,7 +59,7 @@ def cargar_paginas() -> list[dict]:
 # BLOQUE 3: CONFIGURAR EL DIVISOR
 
 def crear_divisor() -> RecursiveCharacterTextSplitter:
-    """Crea el divisor que separará cada página en chunks."""
+    """Crea el divisor que separará cada página en chunks usando los valores de config."""
     return RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP,
@@ -73,7 +71,7 @@ def crear_divisor() -> RecursiveCharacterTextSplitter:
 # BLOQUE 4: CREAR LOS CHUNKS
 
 def crear_chunks(paginas: list[dict]) -> list[dict]:
-    """Divide las páginas en chunks y conserva sus metadatos."""
+    """Divide las páginas en chunks y conserva sus metadatos sin ensuciar el texto."""
     divisor = crear_divisor()
     chunks = []
     id_global = 1
@@ -85,18 +83,17 @@ def crear_chunks(paginas: list[dict]) -> list[dict]:
 
         fragmentos = divisor.split_text(texto)
 
-        # Dentro de la función crear_chunks, reemplaza el bloque del for interno con esto:
         for numero_chunk, fragmento in enumerate(fragmentos, start=1):
-            texto_enriquecido = f"[Fuente: {pagina['archivo']}]\n{fragmento}"
-
+            # Guardamos el fragmento limpio (sin inyectar el nombre del archivo)
+            # para no añadir ruido a los embeddings del modelo E5.
             chunks.append({
                 "id": f"chunk_{id_global:06d}",
                 "archivo": pagina["archivo"],
                 "ruta_relativa": pagina["ruta_relativa"],
                 "pagina": pagina["pagina"],
                 "chunk_en_pagina": numero_chunk,
-                "texto": texto_enriquecido, # Guardamos el texto enriquecido
-                "cantidad_caracteres": len(texto_enriquecido),
+                "texto": fragmento, 
+                "cantidad_caracteres": len(fragmento),
             })
             id_global += 1
 
@@ -177,11 +174,11 @@ def main() -> int:
     print(f"Páginas con texto      : {paginas_con_texto}")
     print(f"Páginas vacías         : {paginas_vacias}")
     print(f"Tamaño del chunk       : {CHUNK_SIZE}")
-    print(f"Overlap                 : {CHUNK_OVERLAP}")
-    print(f"Chunks creados          : {len(chunks)}")
-    print(f"Chunk más pequeño       : {min(longitudes)} caracteres")
-    print(f"Chunk promedio          : " f"{sum(longitudes) / len(longitudes):.2f} caracteres")
-    print(f"Chunk más grande        : {max(longitudes)} caracteres")
+    print(f"Overlap                : {CHUNK_OVERLAP}")
+    print(f"Chunks creados         : {len(chunks)}")
+    print(f"Chunk más pequeño      : {min(longitudes)} caracteres")
+    print(f"Chunk promedio         : {sum(longitudes) / len(longitudes):.2f} caracteres")
+    print(f"Chunk más grande       : {max(longitudes)} caracteres")
 
     print("\nArchivos generados:")
     print(f"  - {ARCHIVO_CHUNKS}")
@@ -193,4 +190,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

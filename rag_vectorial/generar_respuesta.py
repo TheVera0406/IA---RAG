@@ -1,4 +1,3 @@
-
 """
 ETAPA D - GENERACIÓN DE RESPUESTAS CON OPENAI
 
@@ -21,6 +20,9 @@ from openai import OpenAI
 
 from buscar_contexto import buscar_chunks, cargar_recursos, construir_contexto
 
+# Importamos la configuración centralizada
+from config import MODELO_LLM
+
 
 # =========================================================
 # BLOQUE 1: CONFIGURACIÓN
@@ -29,7 +31,6 @@ from buscar_contexto import buscar_chunks, cargar_recursos, construir_contexto
 BASE_DIR = Path(__file__).resolve().parent
 ARCHIVO_ENV = BASE_DIR / ".env"
 
-MODELO_LLM = "gpt-5-mini"
 MOSTRAR_CONTEXTO = False
 
 
@@ -54,8 +55,14 @@ def cargar_cliente_openai() -> OpenAI:
 
 def generar_respuesta(pregunta: str, resultados: list[dict], cliente: OpenAI) -> tuple[str, str]:
     """Envía la pregunta y el contexto recuperado a OpenAI."""
+    
+    # CORRECCIÓN: Control estricto de contexto vacío
+    if not resultados:
+        raise ValueError("No existe contexto suficiente para responder.")
+
     contexto = construir_contexto(resultados)
 
+    # CORRECCIÓN: Se agregó un espacio después de "internos."
     instrucciones = (
         "Eres un asistente educativo especializado en obesidad. "
         "Responde únicamente con la información del contexto entregado. "
@@ -63,7 +70,7 @@ def generar_respuesta(pregunta: str, resultados: list[dict], cliente: OpenAI) ->
         "Si el contexto no permite responder correctamente, indica que la "
         "información recuperada es insuficiente. Responde en español de forma "
         "clara, precisa y comprensible. No menciones chunks, embeddings, "
-        "bases vectoriales ni procesos internos."
+        "bases vectoriales ni procesos internos. "
         "Responde directamente la pregunta, sin comenzar con frases como "
         "'según el contexto' o 'según el material proporcionado'. "
         "Utiliza un máximo de 180 palabras."
@@ -81,15 +88,16 @@ Redacta una respuesta utilizando solamente el contexto anterior."""
         model=MODELO_LLM,
         instructions=instrucciones,
         input=entrada,
-        reasoning = {"effort": "minimal"},
+        reasoning={"effort": "minimal"},
         max_output_tokens=1200,
     )
 
     if respuesta.status == "incomplete":
-        motivo = getattr(respuesta.incomplete_details,"reason", "desconocido")
-        raise ValueError(f"OpenAI devolvio una respuesta incompleta {motivo}")
+        motivo = getattr(respuesta.incomplete_details, "reason", "desconocido")
+        raise ValueError(f"OpenAI devolvió una respuesta incompleta: {motivo}")
 
-    texto = respuesta.output_text.strip()
+    # CORRECCIÓN: Manejo seguro por si output_text es None
+    texto = (respuesta.output_text or "").strip()
 
     if not texto:
         raise ValueError("OpenAI no devolvió una respuesta de texto.")
@@ -187,4 +195,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

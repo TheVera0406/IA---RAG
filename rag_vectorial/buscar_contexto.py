@@ -1,4 +1,3 @@
-
 """
 ETAPA C - BÚSQUEDA DE CONTEXTO EN CHROMADB
 
@@ -7,7 +6,7 @@ Este programa:
 2. Abre la colección almacenada en ChromaDB.
 3. Recibe una pregunta del usuario.
 4. Convierte la pregunta en un embedding.
-5. Recupera los 5 chunks más cercanos.
+5. Recupera los candidatos, filtra por distancia y conserva el top de contexto.
 6. Muestra los resultados y construye el contexto final.
 
 Todavía NO utiliza la API key ni llama a OpenAI.
@@ -21,22 +20,19 @@ from pathlib import Path
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-
-# =========================================================
-# BLOQUE 1: CONFIGURACIÓN
-# =========================================================
-
-BASE_DIR = Path(__file__).resolve().parent
-BASE_VECTORIAL_DIR = BASE_DIR / "base_vectorial"
-
-NOMBRE_COLECCION = "documentos_obesidad"
-MODELO_EMBEDDINGS = "intfloat/multilingual-e5-base"
-TOP_K = 8
-UMBRAL_DISTANCIA = 1.2 # Si la distancia es mayor a esto, lo descartamos por irrelevante
+# Importamos la configuración centralizada
+from config import (
+    BASE_VECTORIAL_DIR,
+    NOMBRE_COLECCION,
+    MODELO_EMBEDDINGS,
+    TOP_K_CANDIDATOS,
+    MAX_CHUNKS_CONTEXTO,
+    UMBRAL_DISTANCIA
+)
 
 
 # =========================================================
-# BLOQUE 2: CARGAR MODELO Y CHROMADB
+# BLOQUE 1: CARGAR MODELO Y CHROMADB
 # =========================================================
 
 def cargar_recursos():
@@ -58,25 +54,28 @@ def cargar_recursos():
 
 
 # =========================================================
-# BLOQUE 3: CREAR EMBEDDING DE LA PREGUNTA
+# BLOQUE 2: CREAR EMBEDDING DE LA PREGUNTA
 # =========================================================
 
 def crear_embedding_pregunta(pregunta: str, modelo) -> list[list[float]]:
     """Convierte la pregunta en un vector normalizado."""
+    
+    # CORRECCIÓN CRÍTICA: E5 requiere el prefijo 'query: ' para consultas.
+    texto_consulta = f"query: {pregunta}"
 
     return modelo.encode(
-        [pregunta],
+        [texto_consulta],
         convert_to_numpy=True,
         normalize_embeddings=True,
     ).tolist()
 
 
 # =========================================================
-# BLOQUE 4: BUSCAR CHUNKS EN CHROMADB
+# BLOQUE 3: BUSCAR CHUNKS EN CHROMADB
 # =========================================================
 
-def buscar_chunks(pregunta: str, modelo, coleccion, top_k: int = TOP_K) -> list[dict]:
-    """Busca en ChromaDB los chunks más cercanos a la pregunta."""
+def buscar_chunks(pregunta: str, modelo, coleccion, top_k: int = TOP_K_CANDIDATOS) -> list[dict]:
+    """Busca candidatos, filtra por distancia y devuelve el contexto definitivo."""
 
     embedding = crear_embedding_pregunta(pregunta, modelo)
 
@@ -95,9 +94,9 @@ def buscar_chunks(pregunta: str, modelo, coleccion, top_k: int = TOP_K) -> list[
         resultados["distances"][0],
     )
 
+    # 1. Aplicamos el umbral (si está definido)
     for posicion, (id_chunk, texto, metadata, distancia) in enumerate(datos, start=1):
-    # Solo agregamos el chunk si cumple con el umbral de similitud
-        if float(distancia) <= UMBRAL_DISTANCIA:
+        if UMBRAL_DISTANCIA is None or float(distancia) <= UMBRAL_DISTANCIA:
             encontrados.append({
                 "posicion": len(encontrados) + 1,
                 "id": id_chunk,
@@ -105,19 +104,24 @@ def buscar_chunks(pregunta: str, modelo, coleccion, top_k: int = TOP_K) -> list[
                 "metadata": metadata or {},
                 "distancia": float(distancia),
             })
+            
+    # 2. Control de contexto vacío
+    if not encontrados:
+        raise ValueError("No se encontraron fragmentos suficientemente relevantes (todos superaron el umbral de distancia).")
 
-    return encontrados
+    # 3. Limitamos a los mejores fragmentos según MAX_CHUNKS_CONTEXTO
+    return encontrados[:MAX_CHUNKS_CONTEXTO]
 
 
 # =========================================================
-# BLOQUE 5: MOSTRAR LOS RESULTADOS
+# BLOQUE 4: MOSTRAR LOS RESULTADOS
 # =========================================================
 
 def mostrar_resultados(resultados: list[dict]) -> None:
     """Muestra los chunks recuperados junto con sus fuentes."""
 
     print("\n" + "=" * 70)
-    print("CHUNKS RECUPERADOS")
+    print("CHUNKS RECUPERADOS Y ACEPTADOS")
     print("=" * 70)
 
     for resultado in resultados:
@@ -133,11 +137,11 @@ def mostrar_resultados(resultados: list[dict]) -> None:
 
 
 # =========================================================
-# BLOQUE 6: CONSTRUIR EL CONTEXTO
+# BLOQUE 5: CONSTRUIR EL CONTEXTO
 # =========================================================
 
 def construir_contexto(resultados: list[dict]) -> str:
-    """Une los chunks recuperados en un solo contexto con fuentes."""
+    """Une los chunks recuperados en un solo contexto con fuentes explícitas."""
 
     partes = []
 
@@ -155,7 +159,7 @@ def construir_contexto(resultados: list[dict]) -> str:
 
 
 # =========================================================
-# BLOQUE 7: PROGRAMA PRINCIPAL
+# BLOQUE 6: PROGRAMA PRINCIPAL
 # =========================================================
 
 def main() -> int:
@@ -172,7 +176,9 @@ def main() -> int:
 
         print(f"Colección cargada       : {NOMBRE_COLECCION}")
         print(f"Registros disponibles   : {coleccion.count()}")
-        print(f"Resultados por búsqueda : {TOP_K}")
+        print(f"Buscando candidatos     : {TOP_K_CANDIDATOS}")
+        print(f"Chunks a conservar      : {MAX_CHUNKS_CONTEXTO}")
+        print(f"Umbral de distancia     : {UMBRAL_DISTANCIA}")
 
     except Exception as error:
         print(f"[ERROR] {type(error).__name__}: {error}")
@@ -208,7 +214,7 @@ def main() -> int:
 
 
 # =========================================================
-# BLOQUE 8: PUNTO DE ENTRADA
+# BLOQUE 7: PUNTO DE ENTRADA
 # =========================================================
 
 if __name__ == "__main__":

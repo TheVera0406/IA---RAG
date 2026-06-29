@@ -16,7 +16,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-
 BASE_DIR = Path(__file__).resolve().parent
 CARPETAS_REQUERIDAS = (
     BASE_DIR / "documentos",
@@ -25,13 +24,14 @@ CARPETAS_REQUERIDAS = (
 )
 
 # El nombre de instalación puede ser distinto del nombre usado en import.
+# CORRECCIÓN: Librerías actualizadas para el RAG Vectorial
 LIBRERIAS = {
-    "pandas": "pandas",
     "pypdf": "pypdf",
     "langchain-text-splitters": "langchain_text_splitters",
     "sentence-transformers": "sentence_transformers",
     "chromadb": "chromadb",
-    "langchain-openai": "langchain_openai",
+    "numpy": "numpy",
+    "openai": "openai",
     "python-dotenv": "dotenv",
     "tqdm": "tqdm",
 }
@@ -74,7 +74,7 @@ def verificar_api_key() -> bool:
     load_dotenv(BASE_DIR / ".env")
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
 
-    if api_key and api_key != "coloca_aqui_tu_api_key":
+    if api_key and api_key != "tu_clave_real_aqui":
         print("[OK] OPENAI_API_KEY fue encontrada (su contenido permanece oculto).")
         return True
 
@@ -86,7 +86,7 @@ def verificar_api_key() -> bool:
 
 def main() -> None:
     print("=" * 62)
-    print("VERIFICACIÓN DEL ENTORNO — RAG BÁSICO")
+    print("VERIFICACIÓN DEL ENTORNO — RAG VECTORIAL E5")
     print("=" * 62)
 
     resultados_obligatorios = [
