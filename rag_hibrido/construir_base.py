@@ -174,8 +174,6 @@ def guardar_paginas_jsonl(paginas: list[dict],) -> None:
     """
     Guarda todas las páginas en formato JSONL.
 
-    JSONL significa JSON Lines.
-
     Cada línea contiene un objeto JSON independiente.
     """
 

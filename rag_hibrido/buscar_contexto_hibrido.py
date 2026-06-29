@@ -1,13 +1,13 @@
 """
 ETAPA C - BÚSQUEDA HÍBRIDA DE CONTEXTO EN CHROMADB
 
-Este programa es una versión MEJORADA del buscar_contexto.py original.
+versión MEJORADA del buscar_contexto.py original.
 
 MEJORAS IMPLEMENTADAS:
-✓ Combina Embeddings (similitud semántica) + BM25 (relevancia léxica)
-✓ Recupera chunks más relevantes usando dos señales simultáneamente
-✓ Mantiene compatibilidad con toda la pipeline existente
-✓ Parámetros ajustables (pesos, top-k)
+Combina Embeddings (similitud semántica) + BM25 (relevancia léxica)
+Recupera chunks más relevantes usando dos señales simultáneamente
+Mantiene compatibilidad con toda la pipeline existente
+Parámetros ajustables (pesos, top-k)
 
 ETAPAS DEL RETRIEVAL HÍBRIDO:
 1. Usuario escribe pregunta
@@ -42,10 +42,10 @@ NOMBRE_COLECCION = "documentos_obesidad"
 MODELO_EMBEDDINGS = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 TOP_K = 5
 
-# 🎯 PARÁMETROS DE CONTROL DEL RETRIEVAL HÍBRIDO
+# PARÁMETROS DE CONTROL DEL RETRIEVAL HÍBRIDO
 EMBEDDING_WEIGHT = 0.5  # 50% embeddings
 BM25_WEIGHT = 0.5       # 50% BM25
-# Ajusta estos valores para cambiar el equilibrio:
+# Ajustar estos valores para cambiar el equilibrio:
 # - 0.7 / 0.3 → más semántico
 # - 0.3 / 0.7 → más léxico
 
@@ -153,7 +153,7 @@ def cargar_recursos():
             f"No existe la base vectorial: {BASE_VECTORIAL_DIR}"
         )
 
-    print(f"📦 Cargando modelo: {MODELO_EMBEDDINGS}")
+    print(f"Cargando modelo: {MODELO_EMBEDDINGS}")
     modelo = SentenceTransformer(MODELO_EMBEDDINGS)
     
     cliente = chromadb.PersistentClient(path=str(BASE_VECTORIAL_DIR))
@@ -265,17 +265,17 @@ def buscar_chunks_hibrido(
     print(f"\n🔍 Búsqueda híbrida (E:{embedding_weight:.1%} + B:{bm25_weight:.1%})")
     
     # Paso 1: Retrieval por embeddings
-    print("  1️⃣  Buscando por embeddings (semántica)...", end=" ", flush=True)
+    print("  Buscando por embeddings (semántica)...", end=" ", flush=True)
     scores_embedding = buscar_por_embeddings(pregunta, modelo, coleccion, top_k=coleccion.count())
     print(f"✓ ({len(scores_embedding)} resultados)")
     
     # Paso 2: Retrieval por BM25
-    print("  2️⃣  Buscando por BM25 (palabras clave)...", end=" ", flush=True)
+    print("  Buscando por BM25 (palabras clave)...", end=" ", flush=True)
     scores_bm25 = buscar_por_bm25(pregunta, coleccion, top_k=coleccion.count())
     print(f"✓ ({len(scores_bm25)} resultados)")
     
     # Paso 3: Combinar scores
-    print("  3️⃣  Combinando scores...", end=" ", flush=True)
+    print("   Combinando scores...", end=" ", flush=True)
     todos_ids = set(scores_embedding.keys()) | set(scores_bm25.keys())
     
     hybrid_scores = {}
@@ -292,7 +292,7 @@ def buscar_chunks_hibrido(
     print("✓")
     
     # Paso 4: Ordenar y obtener TOP-K
-    print(f"  4️⃣  Ordenando y recuperando TOP-{top_k}...", end=" ", flush=True)
+    print(f"  Ordenando y recuperando TOP-{top_k}...", end=" ", flush=True)
     top_ids = sorted(
         hybrid_scores.keys(),
         key=lambda x: hybrid_scores[x]["hybrid"],
@@ -335,22 +335,22 @@ def mostrar_resultados(resultados: list[dict]) -> None:
     """Muestra los chunks recuperados con sus scores detallados."""
 
     print("\n" + "=" * 80)
-    print("📊 CHUNKS RECUPERADOS (HÍBRIDO)")
+    print("CHUNKS RECUPERADOS (HÍBRIDO)")
     print("=" * 80)
 
     for resultado in resultados:
         metadata = resultado["metadata"]
 
-        print(f"\n📌 RESULTADO #{resultado['posicion']}")
+        print(f"\n RESULTADO #{resultado['posicion']}")
         print(f"   ID              : {resultado['id']}")
         print(f"   Documento       : {metadata.get('archivo', 'Sin información')}")
         print(f"   Página          : {metadata.get('pagina', 'Sin información')}")
         print(f"   Chunk en página : {metadata.get('chunk_en_pagina', 'Sin información')}")
-        print(f"\n   🎯 SCORES:")
-        print(f"      Híbrido      : {resultado['score_hybrid']:.4f} ⭐")
+        print(f"\n    SCORES:")
+        print(f"      Híbrido      : {resultado['score_hybrid']:.4f} ")
         print(f"      Embedding    : {resultado['score_embedding']:.4f} (semántica)")
         print(f"      BM25         : {resultado['score_bm25']:.4f} (léxica)")
-        print(f"\n   📄 Texto: {resultado['texto'][:150]}...")
+        print(f"\n    Texto: {resultado['texto'][:150]}...")
 
 
 # =========================================================
@@ -383,15 +383,15 @@ def main() -> int:
     """Permite realizar búsquedas hasta que el usuario escriba salir."""
 
     print("=" * 80)
-    print("🚀 ETAPA C - BÚSQUEDA HÍBRIDA DE CONTEXTO")
+    print(" ETAPA C - BÚSQUEDA HÍBRIDA DE CONTEXTO")
     print("=" * 80)
-    print("\n✨ VERSIÓN MEJORADA CON RETRIEVAL HÍBRIDO")
+    print("\n VERSIÓN MEJORADA CON RETRIEVAL HÍBRIDO")
     print(f"   • Embeddings: {EMBEDDING_WEIGHT:.0%}")
     print(f"   • BM25: {BM25_WEIGHT:.0%}")
     print(f"   • TOP-K: {TOP_K}")
 
     try:
-        print(f"\n🔄 Cargando modelo: {MODELO_EMBEDDINGS}")
+        print(f"\nCargando modelo: {MODELO_EMBEDDINGS}")
 
         modelo, coleccion = cargar_recursos()
 
@@ -400,22 +400,22 @@ def main() -> int:
         print(f"✓ Modelo cargado          : {MODELO_EMBEDDINGS}")
 
     except Exception as error:
-        print(f"❌ [ERROR] {type(error).__name__}: {error}")
+        print(f" [ERROR] {type(error).__name__}: {error}")
         return 1
 
     print("\n" + "=" * 80)
-    print("🎯 LISTO PARA BÚSQUEDAS")
+    print(" LISTO PARA BÚSQUEDAS")
     print("=" * 80)
 
     while True:
-        pregunta = input("\n❓ Escribe una pregunta o 'salir': ").strip()
+        pregunta = input("\n Escribe una pregunta o 'salir': ").strip()
 
         if pregunta.lower() == "salir":
-            print("👋 Programa finalizado.")
+            print(" Programa finalizado.")
             break
 
         if not pregunta:
-            print("⚠️  La pregunta no puede estar vacía.")
+            print(" La pregunta no puede estar vacía.")
             continue
 
         try:
@@ -436,12 +436,12 @@ def main() -> int:
             contexto = construir_contexto(resultados)
 
             print("\n" + "=" * 80)
-            print("📋 CONTEXTO FINAL (para pasar al LLM)")
+            print(" CONTEXTO FINAL (para pasar al LLM)")
             print("=" * 80)
             print(contexto)
 
         except Exception as error:
-            print(f"❌ [ERROR] {type(error).__name__}: {error}")
+            print(f" [ERROR] {type(error).__name__}: {error}")
 
     return 0
 

@@ -1,11 +1,3 @@
-"""
-ETAPA E - PROCESAMIENTO AUTOMÁTICO DE PREGUNTAS (COMPATIBLE)
-
-Funciona con:
-✓ buscar_contexto_hibrido.py (retrieval híbrido)
-✓ OpenAI API antigua
-"""
-
 import csv
 import sys
 import time
@@ -155,16 +147,12 @@ def procesar_pregunta(fila: dict, modelo_embeddings, coleccion, cliente) -> None
     id_pregunta = fila["ID"]
     pregunta = fila["pregunta"]
 
-    # Búsqueda HÍBRIDA ✅
-    resultados = buscar_chunks_hibrido(pregunta, modelo_embeddings, coleccion, top_k=5)
-    respuesta, contexto = generar_con_reintentos(
-        pregunta,
-        resultados,
-        cliente,
-    )
+
+    resultados = buscar_chunks_hibrido(pregunta, modelo_embeddings, coleccion, top_k=15)
+    
+    respuesta, contexto = generar_respuesta(pregunta, resultados, cliente, modo_csv=True)
 
     guardar_respuesta(id_pregunta, respuesta, contexto)
-
 
 # =========================================================
 # BLOQUE 6: PROGRAMA PRINCIPAL

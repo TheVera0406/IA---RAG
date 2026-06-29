@@ -2,8 +2,8 @@
 ETAPA D - GENERACIÓN DE RESPUESTAS CON OPENAI (COMPATIBLE)
 
 Este programa funciona con:
-✓ buscar_contexto_hibrido.py (retrieval híbrido)
-✓ OpenAI API antigua (client.chat.completions.create())
+buscar_contexto_hibrido.py (retrieval híbrido)
+OpenAI API antigua (client.chat.completions.create())
 """
 
 import os
@@ -15,7 +15,7 @@ from openai import OpenAI
 
 # Importar del buscar_contexto_hibrido
 from buscar_contexto_hibrido import (
-    buscar_chunks_hibrido,  # ✅ Función correcta
+    buscar_chunks_hibrido,  # Función correcta
     cargar_recursos,
     construir_contexto
 )
@@ -51,10 +51,10 @@ def cargar_cliente_openai() -> OpenAI:
 # BLOQUE 3: GENERAR LA RESPUESTA
 # =========================================================
 
-def generar_respuesta(pregunta: str, resultados: list[dict], cliente: OpenAI) -> tuple[str, str]:
+def generar_respuesta(pregunta: str, resultados: list[dict], cliente: OpenAI, modo_csv: bool = False) -> tuple[str, str]:
     """Envía la pregunta y el contexto recuperado a OpenAI."""
     contexto = construir_contexto(resultados)
-
+    
     instrucciones = (
         "Eres un asistente educativo especializado en obesidad. "
         "Responde únicamente con la información del contexto entregado. "
@@ -67,27 +67,20 @@ def generar_respuesta(pregunta: str, resultados: list[dict], cliente: OpenAI) ->
         "'según el contexto' o 'según el material proporcionado'. "
         "Utiliza un máximo de 180 palabras."
     )
-
+    
     entrada = f"""PREGUNTA:
 {pregunta}
 
 CONTEXTO:
 {contexto}
 
-Redacta una respuesta utilizando solamente el contexto anterior."""
+Redacta una respuesta utilizando la información anterior."""
 
-    # Usar API de OpenAI
     respuesta = cliente.chat.completions.create(
         model=MODELO_LLM,
         messages=[
-            {
-                "role": "system",
-                "content": instrucciones
-            },
-            {
-                "role": "user",
-                "content": entrada
-            }
+            {"role": "system", "content": instrucciones},
+            {"role": "user", "content": entrada}
         ],
         max_tokens=1200,
         temperature=0.3
@@ -181,8 +174,8 @@ def main() -> int:
             continue
 
         try:
-            # Búsqueda HÍBRIDA ✅
-            resultados = buscar_chunks_hibrido(pregunta, modelo_embeddings, coleccion, top_k=5)
+            # Búsqueda HÍBRIDA
+            resultados = buscar_chunks_hibrido(pregunta, modelo_embeddings, coleccion, top_k=10)
             
             respuesta, contexto = generar_respuesta(pregunta, resultados, cliente)
             mostrar_salida(respuesta, resultados, contexto)

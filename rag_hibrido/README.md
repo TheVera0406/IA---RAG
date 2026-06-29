@@ -1,8 +1,8 @@
-# 🚀 GUÍA: IMPLEMENTAR RAG HÍBRIDO
+# 🚀 GUÍA: IMPLEMENTAR RAG HÍBRIDO EN TU PROYECTO
 
 ## ¿Qué es el RAG Híbrido?
 
-El RAG basico actual usa **solo embeddings** (similitud semántica):
+Tu RAG actual usa **solo embeddings** (similitud semántica):
 ```
 Pregunta → Embedding → ChromaDB → Chunks similares
 ```

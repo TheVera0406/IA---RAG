@@ -2,8 +2,6 @@
 RAG HÍBRIDO - Sistema de Recuperación Aumentada
 Combina: Embeddings + BM25 + Reranking
 
-Autor: Cristian Vera
-Etapa A → Híbrido
 """
 
 import os
@@ -244,8 +242,8 @@ class RAGHibrido:
         results = self.retriever.retrieve(query, top_k=top_k, return_scores=True)
         
         if verbose:
-            print(f"\n🔍 Pregunta: {query}")
-            print(f"📊 Top {top_k} resultados:\n")
+            print(f"\n Pregunta: {query}")
+            print(f" Top {top_k} resultados:\n")
             for i, doc in enumerate(results, 1):
                 print(f"  {i}. [{doc.get('title', 'Sin título')}]")
                 print(f"     Hybrid: {doc['retrieval_score']:.3f} | "
@@ -374,11 +372,11 @@ if __name__ == "__main__":
         # Mostrar prompt generado
         context = rag.format_context(retrieved)
         prompt = rag.generate_rag_prompt(query, context)
-        print("💬 PROMPT PARA LLM (primeros 300 caracteres):")
+        print(" PROMPT PARA LLM (primeros 300 caracteres):")
         print(prompt[:300] + "...\n")
         print("-" * 70 + "\n")
     
-    print("\n✅ Demo completada. Ahora puedes:")
+    print("\n Demo completada. Ahora puedes:")
     print("   1. Cargar tu propio corpus")
     print("   2. Integrar con un LLM real (Claude, OpenAI, etc.)")
     print("   3. Ajustar pesos: embedding_weight=0.5 (50% embedding, 50% BM25)")
