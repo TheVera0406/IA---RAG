@@ -22,18 +22,20 @@ import chromadb
 import numpy as np
 from tqdm import tqdm
 
+# Importamos la configuración centralizada
+from config import (
+    SALIDAS_DIR,
+    BASE_VECTORIAL_DIR,
+    NOMBRE_COLECCION
+)
 
-# BLOQUE 1: CONFIGURACIÓN
 
-BASE_DIR = Path(__file__).resolve().parent
-SALIDAS_DIR = BASE_DIR / "salidas"
-BASE_VECTORIAL_DIR = BASE_DIR / "base_vectorial"
+# BLOQUE 1: CONFIGURACIÓN DE RUTAS
 
 ARCHIVO_CHUNKS = SALIDAS_DIR / "chunks.jsonl"
 ARCHIVO_EMBEDDINGS = SALIDAS_DIR / "embeddings.npy"
 ARCHIVO_INFO = SALIDAS_DIR / "info_chromadb.json"
 
-NOMBRE_COLECCION = "documentos_obesidad"
 TAMANO_LOTE = 100
 
 

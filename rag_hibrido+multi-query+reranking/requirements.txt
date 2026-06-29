@@ -1,0 +1,29 @@
+# Lectura de documentos PDF
+pypdf
+
+# División de texto en chunks
+langchain-text-splitters
+
+# Embeddings E5 y CrossEncoder reranker
+sentence-transformers
+
+# Base de datos vectorial
+chromadb
+
+# Operaciones numéricas
+numpy
+
+# Generación multi-query y respuesta final
+openai
+
+# Variables de entorno
+python-dotenv
+
+# Barras de progreso
+tqdm
+
+# Recuperación léxica
+rank-bm25
+
+# Validación de consultas estructuradas
+pydantic

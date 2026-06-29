@@ -1,21 +1,26 @@
-# Lectura y procesamiento de datos
-pandas
+ # Lectura de documentos PDF
 pypdf
 
 # División del texto en fragmentos
 langchain-text-splitters
 
-# Embeddings locales
+# Modelo de embeddings E5
 sentence-transformers
 
 # Base de datos vectorial
 chromadb
 
-# Conexión con modelos de OpenAI
-langchain-openai
+# Manejo de vectores y matrices
+numpy
 
-# Lectura segura de variables desde .env
+# Generación de respuestas con OpenAI
+openai
+
+# Variables de entorno
 python-dotenv
 
-# Barras de progreso para procesos largos
+# Barras de progreso
 tqdm
+
+# Recuperación léxica BM25
+rank-bm25
