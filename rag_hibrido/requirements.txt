@@ -1,0 +1,26 @@
+ # Lectura de documentos PDF
+pypdf
+
+# División del texto en fragmentos
+langchain-text-splitters
+
+# Modelo de embeddings E5
+sentence-transformers
+
+# Base de datos vectorial
+chromadb
+
+# Manejo de vectores y matrices
+numpy
+
+# Generación de respuestas con OpenAI
+openai
+
+# Variables de entorno
+python-dotenv
+
+# Barras de progreso
+tqdm
+
+# Recuperación léxica BM25
+rank-bm25
