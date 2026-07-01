@@ -20,7 +20,7 @@ Genera:
     salidas/errores_procesamiento.csv
 
 Columnas finales:
-    ID, respuesta, contexto utilizado
+    id,answer,context
 """
 
 import csv
@@ -55,35 +55,35 @@ MAX_INTENTOS = 3
 # =========================================================
 
 def cargar_preguntas() -> list[dict]:
-    """Lee las columnas numero y pregunta desde preguntas.csv."""
+    """Lee las columnas id y pregunta desde preguntas.csv."""
     with ARCHIVO_PREGUNTAS.open("r", encoding="utf-8-sig", newline="") as archivo:
         lector = csv.DictReader(archivo)
 
-        if not lector.fieldnames or not {"numero", "pregunta"}.issubset(lector.fieldnames):
+        if not lector.fieldnames or not {"id", "pregunta"}.issubset(lector.fieldnames):
             raise ValueError(
-                "preguntas.csv debe contener las columnas 'numero' y 'pregunta'."
+                "preguntas.csv debe contener las columnas 'id' y 'pregunta'."
             )
 
         preguntas = [
-            {"ID": fila["numero"].strip(), "pregunta": fila["pregunta"].strip()}
+            {"id": fila["id"].strip(), "pregunta": fila["pregunta"].strip()}
             for fila in lector
-            if fila.get("numero") and fila.get("pregunta")
+            if fila.get("id") and fila.get("pregunta")
         ]
 
-    preguntas = [fila for fila in preguntas if fila["ID"] and fila["pregunta"]]
+    preguntas = [fila for fila in preguntas if fila["id"] and fila["pregunta"]]
     return preguntas[:LIMITE_PREGUNTAS] if LIMITE_PREGUNTAS else preguntas
 
 
 def cargar_ids_completados() -> set[str]:
-    """Obtiene los ID que ya fueron guardados en respuestas.csv."""
+    """Obtiene los id que ya fueron guardados en respuestas.csv."""
     if not ARCHIVO_RESPUESTAS.exists() or ARCHIVO_RESPUESTAS.stat().st_size == 0:
         return set()
 
     with ARCHIVO_RESPUESTAS.open("r", encoding="utf-8-sig", newline="") as archivo:
         return {
-            fila["ID"].strip()
+            fila["id"].strip()
             for fila in csv.DictReader(archivo)
-            if fila.get("ID")
+            if fila.get("id")
         }
 
 
@@ -103,15 +103,15 @@ def preparar_archivo(ruta: Path, columnas: list[str]) -> None:
 def guardar_respuesta(id_pregunta: str, respuesta: str, contexto: str) -> None:
     """Agrega una respuesta al archivo respuestas.csv."""
     fila = {
-        "ID": id_pregunta,
-        "respuesta": respuesta,
-        "contexto utilizado": contexto,
+        "id": id_pregunta,
+        "answer": respuesta,
+        "context": contexto,
     }
 
     with ARCHIVO_RESPUESTAS.open("a", encoding="utf-8-sig", newline="") as archivo:
         escritor = csv.DictWriter(
             archivo,
-            fieldnames=["ID", "respuesta", "contexto utilizado"],
+            fieldnames=["id", "answer", "context"],
         )
         escritor.writerow(fila)
 
@@ -119,7 +119,7 @@ def guardar_respuesta(id_pregunta: str, respuesta: str, contexto: str) -> None:
 def guardar_error(id_pregunta: str, pregunta: str, error: Exception) -> None:
     """Registra una pregunta que no pudo ser procesada."""
     fila = {
-        "ID": id_pregunta,
+        "id": id_pregunta,
         "pregunta": pregunta,
         "error": f"{type(error).__name__}: {error}",
     }
@@ -127,7 +127,7 @@ def guardar_error(id_pregunta: str, pregunta: str, error: Exception) -> None:
     with ARCHIVO_ERRORES.open("a", encoding="utf-8-sig", newline="") as archivo:
         escritor = csv.DictWriter(
             archivo,
-            fieldnames=["ID", "pregunta", "error"],
+            fieldnames=["id", "pregunta", "error"],
         )
         escritor.writerow(fila)
 
@@ -207,10 +207,10 @@ def procesar_pregunta(
     cliente,
 ) -> None:
     """Recupera contexto, genera la respuesta y la guarda."""
-    id_pregunta = fila["ID"]
+    id = fila["id"]
     pregunta = fila["pregunta"]
 
-    respuesta, contexto = generar_con_reintentos(
+    answer, context = generar_con_reintentos(
         pregunta,
         modelo_embeddings,
         coleccion,
@@ -222,9 +222,9 @@ def procesar_pregunta(
     )
 
     guardar_respuesta(
-        id_pregunta,
-        respuesta,
-        contexto,
+        id,
+        answer,
+        context,
     )
 
 
@@ -247,12 +247,12 @@ def main() -> int:
 
     preparar_archivo(
         ARCHIVO_RESPUESTAS,
-        ["ID", "respuesta", "contexto utilizado"],
+        ["id", "answer", "context"],
     )
 
     preparar_archivo(
         ARCHIVO_ERRORES,
-        ["ID", "pregunta", "error"],
+        ["id", "pregunta", "error"],
     )
 
     try:
@@ -262,7 +262,7 @@ def main() -> int:
         pendientes = [
             fila
             for fila in preguntas
-            if fila["ID"] not in completados
+            if fila["id"] not in completados
         ]
 
         print("Cargando E5, ChromaDB, BM25 y reranker...")
@@ -283,7 +283,7 @@ def main() -> int:
         return 1
 
     ids_preguntas = {
-        fila["ID"]
+        fila["id"]
         for fila in preguntas
     }
 
@@ -301,12 +301,12 @@ def main() -> int:
     fallidas = 0
 
     for posicion, fila in enumerate(pendientes, start=1):
-        id_pregunta = fila["ID"]
+        id_pregunta = fila["id"]
         pregunta = fila["pregunta"]
 
         print(
             f"\n[{posicion}/{len(pendientes)}] "
-            f"ID {id_pregunta}: {pregunta}"
+            f"id {id_pregunta}: {pregunta}"
         )
         print(
             "    Generando consultas, recuperando candidatos "
